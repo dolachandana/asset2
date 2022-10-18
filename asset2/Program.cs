@@ -6,28 +6,29 @@ using System.Collections.Generic;
 using System.Diagnostics;
 Console.WriteLine("hello");
 asset s = new asset();
-MyDbContext MyDb = new MyDbContext();
-item newitem = new item();
+MyDbContext MyDb = new MyDbContext();// Creating object for mydbcontext to refer table in database
+item newitem = new item();//creating object for item class
 
 while (true)
 {
 
-    
+    //creating CRUD operations
     Console.WriteLine($"Pick an option\n" +
         "(1) Create\n" +
         "(2) Read\n" +
         "(3)Update\n" +
      "(4) Delete\n"+
-        "(5) Quit" );//pick up any option
+     "(5) Reporting Features\n"+
+        "(6) Quit" );//pick up any option
     Console.WriteLine("__________________________________________________________________________________________");
     string a = Console.ReadLine();
     bool isInt1 = int.TryParse(a, out int option);
     if (isInt1)
-    {    if(option == 5) { break; }
+    {    if(option == 5) { s.reporting(MyDb, newitem); }
         if (option == 4)
         {
-            
-       }
+            s.delete(MyDb, newitem);
+        }
         if (option == 2)
         { s.Read(MyDb,newitem); 
         }
@@ -40,6 +41,7 @@ while (true)
         {
          s.create(MyDb,newitem);   
         }
+        if(option == 6) { break; }
     }
 
 
@@ -108,54 +110,88 @@ class asset
             {
                 Console.ForegroundColor = ConsoleColor.Red;
 
-                Console.WriteLine(g.type.PadRight(10) + g.brand.PadRight(10) + g.modelname.PadRight(10) + g.office.PadRight(10) + g.purchase_date.ToString("yyyy-MM-dd").PadRight(20) + g.price.ToString().PadRight(14) + g.currency.PadRight(13) + g.todayprice);
+                Console.WriteLine(g.Id.ToString().PadRight(10)+g.type.PadRight(10) + g.brand.PadRight(10) + g.modelname.PadRight(10) + g.office.PadRight(10) + g.purchase_date.ToString("yyyy-MM-dd").PadRight(20) + g.price.ToString().PadRight(14) + g.currency.PadRight(13) + g.todayprice);
                 Console.ResetColor();
             }
             else if (diff.TotalDays >= 915 && diff.TotalDays <= 1005)//mark yellow  if date less than 6 months away from 3 years
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
 
-                Console.WriteLine(g.type.PadRight(10) + g.brand.PadRight(10) + g.modelname.PadRight(10) + g.office.PadRight(10) + g.purchase_date.ToString("yyyy-MM-dd").PadRight(20) + g.price.ToString().PadRight(14) + g.currency.PadRight(13) + g.todayprice);
+                Console.WriteLine(g.Id.ToString().PadRight(10)+g.type.PadRight(10) + g.brand.PadRight(10) + g.modelname.PadRight(10) + g.office.PadRight(10) + g.purchase_date.ToString("yyyy-MM-dd").PadRight(20) + g.price.ToString().PadRight(14) + g.currency.PadRight(13) + g.todayprice);
                 Console.ResetColor();
             }
             else
             {
-                Console.WriteLine(g.type.PadRight(10) + g.brand.PadRight(10) + g.modelname.PadRight(10) + g.office.PadRight(10) + g.purchase_date.ToString("yyyy-MM-dd").PadRight(20) + g.price.ToString().PadRight(14) + g.currency.PadRight(13) + g.todayprice);
+                Console.WriteLine(g.Id.ToString().PadRight(10)+g.type.PadRight(10) + g.brand.PadRight(10) + g.modelname.PadRight(10) + g.office.PadRight(10) + g.purchase_date.ToString("yyyy-MM-dd").PadRight(20) + g.price.ToString().PadRight(14) + g.currency.PadRight(13) + g.todayprice);
             }
 
         }
-
-        //foreach (var item in result2)
-        //{
-        //    Console.WriteLine(item.type);
-        //}
-
-
     }
-        public void update(MyDbContext MyDb, item newitem)
+        public void update(MyDbContext MyDb, item newitem)//Updating the data
         {
-        //    string d;
-        
-        //    Console.WriteLine("Enter item Id:");
-        //    d = Console.ReadLine();
-        //bool isInt = int.TryParse(d, out int value);
-        //var user = MyDb.items.SingleOrDefault(c => c.Id == 1);
-        //Console.WriteLine("What do u want to update\n" +
-        //        " 1.type\n2.brand \n3.purchase_date\n4.price\n5.modelname\n6.office ");
-        //    string update1 = Console.ReadLine();
-        //    //var user = from c in MyDb.items
-        //    //           where d ;
-            
-        //newitem.type = update1;
-        //MyDb.items.Add(newitem);
-        //MyDb.SaveChanges();
+       Console.WriteLine("Enter ID you  want to Update");
+            int i = int.Parse(Console.ReadLine());
+            //updating record i in database
+            var user = MyDb.items.SingleOrDefault(x => x.Id == i);// Comparing the ID you want to update with  all the Ids
+
+            Console.Write("Enter Updated Asset Type: ");
+            user.type = Console.ReadLine();
+            Console.Write("Enter updated Asset Brand: ");
+            user.brand = Console.ReadLine();
+            Console.Write("Enter updated Asset Model: ");
+            user.modelname = Console.ReadLine();
+             Console.WriteLine("Enter the  updated Asset office:(India/Sweden/Germany/Norway) ");
+            user.office = Console.ReadLine();
+            Console.WriteLine("Enter updated Asset Purchase date(YYYY-MM-DD): ");
+            string date = Console.ReadLine();
+            DateTime dt = Convert.ToDateTime(date);//converting to dateformat
+            user.purchase_date = dt;
+
+            Console.WriteLine("Enter updated Asset Price in USD: ");
+        string p = Console.ReadLine();
+        bool isInt = int.TryParse(p, out int value);
+
+        if (isInt)// giving todayprice 
+        {
+            user.price = value;
+            if (user.office.ToLower().Trim() == "spain")
+            {
+                user.currency = "EUR";
+                int mul = value * 1;
+                user.todayprice = mul;
+            }
+            else if (user.office.ToLower().Trim() == "sweden")
+            {
+                user.currency = "SEK";
+                double mul = value * 10.98;
+                user.todayprice = mul;
+            }
+            else
+            {
+                user.currency = "USD";
+                user.todayprice = value;
+            }
         }
-    public void delete(MyDbContext MyDb, item newitem)
+        MyDb.SaveChanges();
+    }
+    public void delete(MyDbContext MyDb, item newitem)//deleting the record you want to
     {
-        //var user1 = MyDb.items.SingleOrDefault(x => x.Id == 4);
-        //MyDb.items.Remove(user1);
-        //MyDb.SaveChanges();
-
-
+        Console.WriteLine("Enter the ID u want to delete:");
+        int i = int.Parse(Console.ReadLine());
+        var user1 = MyDb.items.SingleOrDefault(x => x.Id == i);// comparingthe ID u want to delete  with all IDs
+        MyDb.items.Remove(user1);
+        MyDb.SaveChanges();
+    }
+ 
+    public void reporting(MyDbContext MyDb, item newitem)
+        {
+    List<item> Result1 = MyDb.items.ToList();
+         double priceSum = Result1.Sum(newitem => newitem.price);
+        double averageAssetPrice = Result1.Average(item => item.price);
+        double averageAssetAge = Result1.Average(asset => (DateTime.Now - asset.purchase_date).Days);
+        Console.WriteLine("Sum of assets: {0}", priceSum);
+        Console.WriteLine("Average price of assets : {0}", averageAssetPrice.ToString("0.##"));
+        Console.WriteLine("Average age of assets : {0}", averageAssetAge.ToString("0."));
+        Console.ResetColor();
     }
 }
